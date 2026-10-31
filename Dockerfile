@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM python:3.13-slim-bookworm AS builder
+FROM python:3.13-slim-trixie AS builder
 
 ENV PYTHONUNBUFFERED=1 \
     POETRY_NO_INTERACTION=1 \
@@ -19,11 +19,18 @@ RUN apt-get update && \
     rm -rf $POETRY_CACHE_DIR
 
 # Stage 2: Runtime environment
-FROM python:3.13-slim-bookworm
+FROM python:3.13-slim-trixie
 
 ENV PYTHONUNBUFFERED=1 \
     VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
+
+# The runtime stage ships the base image's OS packages as they were on the day
+# the base was published. Upgrade them so a rebuild picks up Debian security fixes.
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 COPY . /app/
