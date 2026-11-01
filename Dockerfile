@@ -34,6 +34,11 @@ RUN apt-get update && \
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
+# Nothing installs packages at runtime: remove pip from the base interpreter
+# and the virtualenv, and ensurepip with the pip wheel it bundles.
+RUN /usr/local/bin/python -m pip uninstall -y pip && \
+    "${VIRTUAL_ENV}/bin/python" -m pip uninstall -y pip && \
+    rm -rf "$(/usr/local/bin/python -c 'import ensurepip, os; print(os.path.dirname(ensurepip.__file__))')"
 COPY . /app/
 
 EXPOSE 9808
