@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM python:3.13-slim-trixie AS builder
+FROM python:3.15-slim-trixie AS builder
 
 ENV PYTHONUNBUFFERED=1 \
     POETRY_NO_INTERACTION=1 \
@@ -19,7 +19,7 @@ RUN apt-get update && \
     rm -rf $POETRY_CACHE_DIR
 
 # Stage 2: Runtime environment
-FROM python:3.13-slim-trixie
+FROM python:3.15-slim-trixie
 
 ENV PYTHONUNBUFFERED=1 \
     VIRTUAL_ENV=/app/.venv \
@@ -33,6 +33,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
 COPY . /app/
 
 EXPOSE 9808
