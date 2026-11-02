@@ -17,10 +17,10 @@ What `.github/workflows/ci.yml` runs:
 
 ```bash
 poetry install --no-interaction --no-root
-black . --check
-mypy .
-pylint $(git ls-files -- '*.py' ':!:**/migrations/*.py')
-pytest --broker=memory --ignore .poetry --cov   # CI also runs --broker=redis and --broker=rabbitmq against service containers
+poetry run black . --check
+poetry run mypy .
+poetry run pylint $(git ls-files -- '*.py' ':!:**/migrations/*.py')
+poetry run pytest --broker=memory --ignore .poetry --cov   # CI also runs --broker=redis and --broker=rabbitmq against service containers
 ```
 
 `helm-test.yml` runs `ct lint` and `ct install` on PRs that touch the chart.
