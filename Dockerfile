@@ -18,7 +18,14 @@ RUN apt-get update && \
     poetry install --without dev --no-root && \
     rm -rf $POETRY_CACHE_DIR
 
-# Stage 2: Runtime environment
+# Stage 2: the source tree for the runtime image, without poetry.lock. The venv
+# is already built, and the lockfile's dev-only entries only add false matches
+# to the image scan.
+FROM python:3.15-slim-trixie AS app-source
+COPY . /app/
+RUN rm -f /app/poetry.lock
+
+# Stage 3: Runtime environment
 FROM python:3.15-slim-trixie
 
 ENV PYTHONUNBUFFERED=1 \
@@ -39,7 +46,7 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 RUN /usr/local/bin/python -m pip uninstall -y pip && \
     "${VIRTUAL_ENV}/bin/python" -m pip uninstall -y pip && \
     rm -rf "$(/usr/local/bin/python -c 'import ensurepip, os; print(os.path.dirname(ensurepip.__file__))')"
-COPY . /app/
+COPY --from=app-source /app/ /app/
 
 EXPOSE 9808
 
